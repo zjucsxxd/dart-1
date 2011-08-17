@@ -90,7 +90,9 @@ static void keyboard_handler(registers_t* regs)
         //Left and right shifts
         if (scancode - 0x80 == 42 || scancode - 0x80 == 54)
 			shift_flag = 0;
-    } else {   
+    }
+	else 
+	{   
         //Keypress (normal)
         
         //Shift
@@ -107,7 +109,9 @@ static void keyboard_handler(registers_t* regs)
              gets_flag++;
              for(;kb_count; kb_count--)
                   buffer[kb_count] = 0;              
-        } else {
+        } 
+		else 
+		{
              if(kbdus[scancode] == '\b')
              {
                   if(kb_count)
@@ -118,34 +122,8 @@ static void keyboard_handler(registers_t* regs)
                   
         } 
         
-        //Print key
-        if(graphical_mode == 2)
-        {
-             if(current_window.id != 0)
-             {
-                  if(kbdus[scancode] >= 97 && kbdus[scancode] <= 122)
-                       plot_char_abs(shell_csr_x, shell_csr_y, (kbdus[scancode]-32), WINDOW_COLOUR_TOPBAR_TEXT, current_window.width, (u32int*)current_window.data);
-                  else
-                       plot_char_abs(shell_csr_x, shell_csr_y, kbdus[scancode], WINDOW_COLOUR_TOPBAR_TEXT, current_window.width, (u32int*)current_window.data);
-                  put_buffer(current_window.x,current_window.y,current_window.width,current_window.height,(u32int*)current_window.data);
-             } else {
-                  if(kbdus[scancode] >= 97 && kbdus[scancode] <= 122)
-                        vgaPutchar (g_csr_x,g_csr_y,(kbdus[scancode]-32),WINDOW_COLOUR_TOPBAR_TEXT);
-                  else
-                        vgaPutchar (g_csr_x,g_csr_y,(kbdus[scancode]),WINDOW_COLOUR_TOPBAR_TEXT);
-                  refresh_screen();
-             }
-        } else {
-        if(graphical_mode == 1)
-        {
-             if(kbdus[scancode] >= 97 && kbdus[scancode] <= 122)
-                  vgaPutchar (g_csr_x,g_csr_y,(kbdus[scancode]-32),1); //A-Z
-             else
-                  vgaPutchar (g_csr_x,g_csr_y,(kbdus[scancode]),1); //0-9
-             refresh_screen();
-        } else
-             monitor_put(kbdus[scancode]);
-        }
+             
+	    monitor_put(kbdus[scancode]);
         return;
     }
 }
