@@ -229,5 +229,58 @@ void kprintf_dec(u32int n)
         c2[i--] = c[j++];
     }
     kprintf(c2);
-
 }
+
+/* * * * * * * * * * * * * * * * * * * * * *
+ *                                         *
+ * sprintf() does whatever printf does in  *
+ * other distributions.                    *
+ * ex.: sprintf("My name is : %s", name);  *
+ *                                         *
+ * * * * * * * * * * * * * * * * * * * * * */
+
+void sprintf (const char *format, ...)
+{
+    char **arg = (char **) &format;
+    char *p;
+    int c;         
+    unsigned colour;          
+    char buf[20];
+     
+    arg++;  
+        
+    while ((c = *format++) != 0)
+    {
+        if (c != '%')
+            monitor_put(c);
+        else
+        {
+            c = *format++;
+            switch (c)
+            {
+                case 'd':
+                case 'u':
+                case 'x':
+                itoa (buf, c, *((int *) arg++));
+                p = buf;
+                goto string; 
+                break;
+     
+                case 's':  
+                    p = *arg++;
+                    if (! p)
+                        p = "(null)";
+     
+                string:
+                    while (*p)
+                        monitor_put (*p++);
+                    break;
+     
+                default:
+                    monitor_put (*((int *) arg++));
+                    break;
+            }
+        }
+    }
+}
+

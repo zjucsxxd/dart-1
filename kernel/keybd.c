@@ -20,53 +20,21 @@
 #include "screen.h"
 #include "common.h"
 #include "keybd.h"
+#include "keymap-us.h"
 
-unsigned char kbdus[128] =
-{
-    0,  27, '1', '2', '3', '4', '5', '6', '7', '8',	/* 9 */
-  '9', '0', '-', '=', '\b',	/* Backspace */
-  '\t',			/* Tab */
-  'q', 'w', 'e', 'r',	/* 19 */
-  't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\n',		/* Enter key */
-    0,			/* 29   - Control */
-  'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';',	/* 39 */
- '\'', '`',   0,		/* Left shift */
- '\\', 'z', 'x', 'c', 'v', 'b', 'n',			/* 49 */
-  'm', ',', '.', '/',   0,					/* Right shift */
-  '*',
-    0,	/* Alt */
-  ' ',	/* Space bar */
-    0,	/* Caps lock */
-    0,	/* 59 - F1 key ... > */
-    0,   0,   0,   0,   0,   0,   0,   0,
-    0,	/* < ... F10 */
-    0,	/* 69 - Num lock*/
-    0,	/* Scroll Lock */
-    0,	/* Home key */
-    0,	/* Up Arrow */
-    0,	/* Page Up */
-  '-',
-    0,	/* Left Arrow */
-    0,
-    0,	/* Right Arrow */
-  '+',
-    0,	/* 79 - End key*/
-    0,	/* Down Arrow */
-    0,	/* Page Down */
-    0,	/* Insert Key */
-    0,	/* Delete Key */
-    0,   0,   0,
-    0,	/* F11 Key */
-    0,	/* F12 Key */
-    0,	/* All other keys are undefined */
-};
+extern unsigned long g_csr_x, g_csr_y;
+extern unsigned long g_wd, g_ht;
+extern int graphical_mode;
 
+extern window_t current_window;
 extern int shell_csr_x;
 extern int shell_csr_y;
 
 volatile int shift_flag=0;
 volatile int caps_flag=0;
 
+volatile char* buffer; //For storing strings
+volatile char* buffer2;
 volatile u32int kb_count = 0; //Position in buffer
 volatile int gets_flag = 0;
 
@@ -75,152 +43,119 @@ int ktmp = 0;
 
 static void do_gets();
 
-void keyboard_handler(registers_t* regs)
+/* Handles the keyboard interrupt */
+static void keyboard_handler(registers_t* regs)
 {
     unsigned char scancode;
 
-    /* Read from the keyboard's data buffer */
+    //Read scancode
     scancode = inb(0x60);
-
-    switch(scancode)
+    
+    switch (scancode)
     {
-        case 0x3A:
-            // Turn on the CAPS LED
-            outb(0x60, 0xED);
-            ltmp |= 4;
-            outb(0x60, ltmp);
-            kprintf("\nCAPS PRESSED");
-            break;
+           case 0x3A:
+                /* CAPS_LOCK LEDS */
+                outb(0x60,0xED);
+                ltmp |= 4;
+                outb(0x60,ltmp);
+                
+                if(caps_flag)
+                caps_flag=0;
+                else
+                caps_flag=1;
+                break;
+           case 0x45:
+                /* NUM_LOCK LEDS */
+                outb(0x60,0xED);
+                ltmp |= 2;
+                outb(0x60,ltmp);
+                break;
+           case 0x46:
+                /* SCROLL_LOCK LEDS */
+                outb(0x60,0xED);
+                ltmp |= 1;
+                outb(0x60,ltmp);
+                break;
+           case 60: /* F12 */
+                reboot();
+                break;
+           default:
+                break;
     }
 
-    /* If the top bit of the byte we read from the keyboard is
-    *  set, that means that a key has just been released */
     if (scancode & 0x80)
     {
-        // This is used to see if the Ctrl Alt Shift keys were pressed
-        if (scancode - 0x80 == 42 || scancode - 0x80 == 54) shift_flag = 0;
-        /*
-        else 
-        {
-            if(kbdus[scancode] == '\n')
-            {
-                if(gets_flag == 0) do_gets();
-                gets_flag++;
-                kput(kbdus[scancode]);
-                for(;kb_count; kb_count--) buffer[kb_count]= 0;              
-            }
-            else 
-            {
-                if(kbdus[scancode] == '\b')
-                {
-                    if(kb_count)
-                    buffer2[kb_count--] = 0;
-                    kput(kbdus[scancode]);
-                } 
-                else 
-                {
-                    //Why not writeChar?
-                    buffer2[kb_count++] = kbdus[scancode];
-                    kput(kbdus[scancode]);
-                }    
-            }
-        }*/
-    }
-    else
-    {
-        /* Here, a key was just pressed. Please note that if you
-        *  hold a key down, you will get repeated key press
-        *  interrupts. */
-
-        /* Just to show you how this works, we simply translate
-        *  the keyboard scancode into an ASCII value, and then
-        *  display it to the screen. You can get creative and
-        *  use some flags to see if a shift is pressed and use a
-        *  different layout, or you can add another 128 entries
-        *  to the above layout to correspond to 'shift' being
-        *  held. If shift is held using the larger lookup table,
-        *  you would add 128 to the scancode when you look for it */
-
-        //kput(kbdus[scancode]);
-
+        //Key release
+        
+        //Left and right shifts
+        if (scancode - 0x80 == 42 || scancode - 0x80 == 54)
+			shift_flag = 0;
+    } else {   
         //Keypress (normal)
         
         //Shift
         if (scancode == 42 || scancode == 54)
-	{
-	      shift_flag = 1;
-	      return;
-	}
+		{
+			shift_flag = 1;
+			return;
+		}
         
+        //Gets()
         if(kbdus[scancode] == '\n')
         {
              if(gets_flag == 0) do_gets();
              gets_flag++;
              for(;kb_count; kb_count--)
-             {
-                  buffer[kb_count] = 0;
-                  //kput('0');
-             }              
-        } 
-        else {
+                  buffer[kb_count] = 0;              
+        } else {
              if(kbdus[scancode] == '\b')
              {
                   if(kb_count)
                   buffer[kb_count--] = 0;
-                  //kput('0');
              } else {
                   buffer[kb_count++] = kbdus[scancode];
              }
+                  
         } 
-    }
-    kput(kbdus[scancode]);
-    outb(0x20,0x20);
-}
-
-/* * * * * * * * * * * * * * * * * * * * * * * * *
- *This simple keyboard handler seems to function *
- *    TODO: Fix the keyboard handler - driver    *
- * * * * * * * * * * * * * * * * * * * * * * * * */
-unsigned shift_state = 0;
-unsigned escaped = 0;
-
-void KeyboardIsr()
-{
-    unsigned new_scan_code = inb(0x60);
-    if(escaped)
-    {
-        new_scan_code += 256;
-        escaped = 0;
-    }
-    switch(new_scan_code)
-    {
-        case 0x2A:
-            shift_state = 1;
-            kprintf("shift_state <- 1\n");
-            break;
-        case 0x3A:
-            outb(0x60, 0xED);
-            ltmp |= 4;
-            outb(0x60, ltmp);
-            kprintf("\nCAPS PRESSED");
-            break;
-        default:
-            if(new_scan_code & 0x80)
-                kprintf("Ignoring scancode\n");
-            else kput(kbdus[new_scan_code]);
+        
+        //Print key
+        if(graphical_mode == 2)
+        {
+             if(current_window.id != 0)
+             {
+                  if(kbdus[scancode] >= 97 && kbdus[scancode] <= 122)
+                       plot_char_abs(shell_csr_x, shell_csr_y, (kbdus[scancode]-32), WINDOW_COLOUR_TOPBAR_TEXT, current_window.width, (u32int*)current_window.data);
+                  else
+                       plot_char_abs(shell_csr_x, shell_csr_y, kbdus[scancode], WINDOW_COLOUR_TOPBAR_TEXT, current_window.width, (u32int*)current_window.data);
+                  put_buffer(current_window.x,current_window.y,current_window.width,current_window.height,(u32int*)current_window.data);
+             } else {
+                  if(kbdus[scancode] >= 97 && kbdus[scancode] <= 122)
+                        vgaPutchar (g_csr_x,g_csr_y,(kbdus[scancode]-32),WINDOW_COLOUR_TOPBAR_TEXT);
+                  else
+                        vgaPutchar (g_csr_x,g_csr_y,(kbdus[scancode]),WINDOW_COLOUR_TOPBAR_TEXT);
+                  refresh_screen();
+             }
+        } else {
+        if(graphical_mode == 1)
+        {
+             if(kbdus[scancode] >= 97 && kbdus[scancode] <= 122)
+                  vgaPutchar (g_csr_x,g_csr_y,(kbdus[scancode]-32),1); //A-Z
+             else
+                  vgaPutchar (g_csr_x,g_csr_y,(kbdus[scancode]),1); //0-9
+             refresh_screen();
+        } else
+             monitor_put(kbdus[scancode]);
+        }
+        return;
     }
 }
 
 void init_keyboard()
 {
-    kprintf("\nInitializing...");
-    register_interrupt_handler(IRQ1, &keyboard_handler/*KeyboardIsr*/);
-    kprintf("\nPS/2 keyboard initialisation");
+    register_interrupt_handler(IRQ1, &keyboard_handler);
 }
 
-/* * * * * * * * * * * * * * * * * * * * * * * * *
- *        Gets a key using interrupts            *
- * * * * * * * * * * * * * * * * * * * * * * * * */
+//Gets a key
 unsigned char getch()
 {
      unsigned char getch_char;
@@ -237,18 +172,8 @@ unsigned char getch()
 char* gets()
 { 
      gets_flag = 0;
-     int i;
-     i = 0;
      while(gets_flag == 0);
-     //{
-     //    buffer[i] = getch();
-     //    if(buffer[i] == '\n') break;
-     //    if(buffer[i] == 'd') break;
-     //    else kput(buffer[i]);
-     //    i++;
-     //}
-     //__asm__ __volatile__ ("hlt");
-     return (char*)buffer;
+     return (char*)buffer2;
 }
 
 static void do_gets()
@@ -260,7 +185,3 @@ static void do_gets()
      }
      return;
 }
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- *                        End of file keybd.c                            *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */

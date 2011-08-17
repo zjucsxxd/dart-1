@@ -17,7 +17,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#ifndef KEYBD_H
+#define KEYBD_H
+#include "isr.h"
+
 void init_keyboard();
 
 unsigned char getch();
 char* gets();
+void keyboard_handler(registers_t* regs);
+volatile char* buffer2;
+volatile char* buffer; //For storing strings
+void KeyboardIsr();
+#endif
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ *                        End of file keybd.c                            *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
