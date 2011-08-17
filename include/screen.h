@@ -37,7 +37,4 @@ void kprintf_hex(u32int n);
 // Output a decimal value to the monitor.
 void kprintf_dec(u32int n);
 
-// kprintf module for text mode
-void sprintf (const char *format, ...);
-
 #endif // SCREEN_H

@@ -22,11 +22,6 @@
 #include "keybd.h"
 #include "keymap-us.h"
 
-extern unsigned long g_csr_x, g_csr_y;
-extern unsigned long g_wd, g_ht;
-extern int graphical_mode;
-
-extern window_t current_window;
 extern int shell_csr_x;
 extern int shell_csr_y;
 
@@ -44,7 +39,7 @@ int ktmp = 0;
 static void do_gets();
 
 /* Handles the keyboard interrupt */
-static void keyboard_handler(registers_t* regs)
+void keyboard_handler(registers_t* regs)
 {
     unsigned char scancode;
 
@@ -77,7 +72,7 @@ static void keyboard_handler(registers_t* regs)
                 outb(0x60,ltmp);
                 break;
            case 60: /* F12 */
-                reboot();
+                //reboot();
                 break;
            default:
                 break;
@@ -86,45 +81,48 @@ static void keyboard_handler(registers_t* regs)
     if (scancode & 0x80)
     {
         //Key release
-        
+        kprintf("Scancode 0x80");
         //Left and right shifts
         if (scancode - 0x80 == 42 || scancode - 0x80 == 54)
-			shift_flag = 0;
+	      shift_flag = 0;
     }
-	else 
-	{   
+    else {   
         //Keypress (normal)
         
         //Shift
         if (scancode == 42 || scancode == 54)
-		{
-			shift_flag = 1;
-			return;
-		}
+	{
+              kprintf(scancode);
+	      shift_flag = 1;
+	      return;
+	}
         
         //Gets()
         if(kbdus[scancode] == '\n')
         {
+             kprintf("\n");
              if(gets_flag == 0) do_gets();
              gets_flag++;
              for(;kb_count; kb_count--)
                   buffer[kb_count] = 0;              
         } 
-		else 
-		{
+        else {
              if(kbdus[scancode] == '\b')
              {
+                  kprintf("\b");
                   if(kb_count)
-                  buffer[kb_count--] = 0;
-             } else {
-                  buffer[kb_count++] = kbdus[scancode];
+                     buffer[kb_count--] = 0;
+             } 
+             else 
+             {
+                   kprintf(kbdus[scancode]);
+                   buffer[kb_count++] = kbdus[scancode];
              }
                   
         } 
         
-             
-	    monitor_put(kbdus[scancode]);
-        return;
+        //kprintf(kbdus[scancode]);
+        //monitor_put(kbdus[scancode]);
     }
 }
 

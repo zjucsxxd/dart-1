@@ -17,7 +17,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#include "isr.h"
+void keyboard_handler(registers_t* regs);
 void init_keyboard();
 
 unsigned char getch();
 char* gets();
+
+volatile char* buffer2;
+volatile char* buffer; //For storing strings
+void KeyboardIsr();

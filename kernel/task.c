@@ -240,7 +240,7 @@ void start_task(void (*func)(void*), void *arg)
     if(fork() == 0)
     {
         func(arg);
-        exit();
+        //exit();
         for(;;);
     }
 }
