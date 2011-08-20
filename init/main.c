@@ -26,6 +26,7 @@
 #include "initrd.h"
 #include "task.h"
 #include "syscall.h"
+#include "cpuid.h"
 //#include "isr.h"
 // #include "keybd.h" if you add this you will get an error
 // The above header is already included in isr.h
@@ -99,8 +100,8 @@ int main(struct multiboot *mboot_ptr, u32int initial_stack)
 // **************************** //
 
     // Initialize interrupts	
-    kprintf("*   Initializing Interrupts\n");
-    asm volatile("sti");
+    kprintf("*   Enabling Interrupts\n");
+    asm("sti"); // asm volatile("sti");
 
     // Start keyboard driver - install it
     kprintf("*   Installing keyboard driver\n");
@@ -115,12 +116,16 @@ int main(struct multiboot *mboot_ptr, u32int initial_stack)
     switch_to_user_mode();
 
     syscall_kprintf("* Start of user mode\n\n");
+    detect_cpu();
     syscall_kprintf("Pegasus has booted successfully\n\n");
 
     //start_task(shell,0); // Kernel panic situation fixed, does not read characters
     //shell();
 
+    // detect_cpu();
+
     kprintf("*   Entering infinite loop\n");
+
     for(;;)
     {
        //endless loop
