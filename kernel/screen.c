@@ -281,13 +281,13 @@ void itoa (char *buf, int base, int d)
 
 /* * * * * * * * * * * * * * * * * * * * * *
  *                                         *
- * sprintf() does whatever printf does in  *
+ * sfprintf() does whatever printf does in  *
  * other distributions.                    *
- * ex.: sprintf("My name is : %s", name);  *
+ * ex.: sfprintf("My name is : %s", name);  *
  *                                         *
  * * * * * * * * * * * * * * * * * * * * * */
 
-void sprintf (const char *format, ...)
+void sfprintf (const char *format, ...)
 {
     char **arg = (char **) &format;
     char *p;

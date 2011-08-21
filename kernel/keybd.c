@@ -21,6 +21,7 @@
 #include "common.h"
 #include "keybd.h"
 #include "keymap-us.h"
+#include "isr.h"
 
 extern int shell_csr_x;
 extern int shell_csr_y;
@@ -49,7 +50,7 @@ void keyboard_handler(registers_t* regs)
     switch (scancode)
     {
            case 0x3A:
-                /* CAPS_LOCK LEDS */
+                // CAPS_LOCK LEDS
                 outb(0x60,0xED);
                 ltmp |= 4;
                 outb(0x60,ltmp);
@@ -60,18 +61,20 @@ void keyboard_handler(registers_t* regs)
                 caps_flag=1;
                 break;
            case 0x45:
-                /* NUM_LOCK LEDS */
+                // NUM_LOCK LEDS
                 outb(0x60,0xED);
                 ltmp |= 2;
                 outb(0x60,ltmp);
                 break;
            case 0x46:
-                /* SCROLL_LOCK LEDS */
+                // SCROLL_LOCK LEDS
                 outb(0x60,0xED);
                 ltmp |= 1;
                 outb(0x60,ltmp);
                 break;
-           case 60: /* F12 */
+		   case 0x2a:
+			   kprintf("shift");
+           case 60: // F12
                 //reboot();
                 break;
            default:
@@ -86,7 +89,8 @@ void keyboard_handler(registers_t* regs)
         if (scancode - 0x80 == 42 || scancode - 0x80 == 54)
 	      shift_flag = 0;
     }
-    else {   
+    else 
+	{   
         //Keypress (normal)
         
         //Shift
@@ -124,6 +128,7 @@ void keyboard_handler(registers_t* regs)
         //kprintf(kbdus[scancode]);
         //monitor_put(kbdus[scancode]);
     }
+	outb(0x20,0x20);
 }
 
 void init_keyboard()
@@ -136,12 +141,13 @@ unsigned char getch()
 {
      unsigned char getch_char;
      
-     if(kbdus[inb(0x60)] != 0) //Not empty
-     outb(0x60,0xf4); //Clear buffer
+     if(kbdus[inb(IRQ1)] != 0) //Not empty
+     outb(IRQ1,0xf4); //Clear buffer
      
-     while(kbdus[inb(0x60)] == 0); //While buffer is empty
-     getch_char = kbdus[inb(0x60)];
-     outb(0x60,0xf4); //Leave it emptying
+     while(kbdus[inb(IRQ1)] == 0); //While buffer is empty
+     getch_char = kbdus[inb(IRQ1)];//0x60)];
+     kput(getch_char);
+     outb(IRQ1,0xf4); //Leave it emptying
      return getch_char;
 }
 
@@ -154,7 +160,7 @@ char* gets()
 
 static void do_gets()
 {
-     buffer[kb_count++] = 0; //Null terminated biatch!
+     buffer[kb_count++] = 0; 
      for(;kb_count; kb_count--)
      {
           buffer2[kb_count] = buffer[kb_count];

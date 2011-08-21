@@ -20,7 +20,7 @@
 #include "common.h"
 
 /* * * * * * * * * * * * * * * * * * * * * * * * *
- *    Write a byte out of the specified port.    *
+ *    Write a byte out to the specified port.    *
  * * * * * * * * * * * * * * * * * * * * * * * * */
 void outb(u16int port, u8int value)
 {
@@ -37,9 +37,6 @@ u8int inb(u16int port)
     return ret;
 }
 
-/* * * * * * * * * * * * * * * * * * * * * * * * *
- *     Read a word out of the specified port.    *
- * * * * * * * * * * * * * * * * * * * * * * * * */
 u16int inw(u16int port)
 {
     u16int ret;
@@ -139,17 +136,16 @@ char *strcat(char *dest, const char *src)
  * * * * * * * * * * * * * * * * * * * * * * * * */
 extern void panic(const char *message, const char *file, u32int line)
 {
-    asm volatile("cli");                   // Disable interrupts since the system will
-	                                       // go down.
-    kprintf("PANIC! [");                   // Show the panic message
-    kprintf(message);                      // Show the fault that was caused
+    asm volatile("cli"); // Disable interrupts.
+
+    kprintf("PANIC! [");
+    kprintf(message);
     kprintf("] -> ");
-    kprintf(file);;                        // Show where the assertion error appeared 
+    kprintf(file);
     kprintf(":");
-    kprintf_dec(line);                     // Show the specific line in the file of 
-	                                       // which showed the kernel panic 
+    kprintf_dec(line);
     kprintf("\n");
-    for(;;);                               // Halt the system for it's own protection
+    for(;;); // Halt the system
 }
 
 /* * * * * * * * * * * * * * * * * * * * * * * * *
@@ -158,17 +154,16 @@ extern void panic(const char *message, const char *file, u32int line)
  * * * * * * * * * * * * * * * * * * * * * * * * */
 extern void panic_assert(const char *file, u32int line, const char *desc)
 {
-    asm volatile("cli");                   // Disable interrupts since the system will
-	                                       // go down.
-    kprintf("PANIC! ASSERTION-FAILED [");  // Show the panic message
+    asm volatile("cli"); // Disable interrupts.
+
+    kprintf("PANIC! ASSERTION-FAILED [");
     kprintf(desc);
     kprintf("] -> ");
-    kprintf(file);                         // Show where the assertion error appeared
+    kprintf(file);
     kprintf(":");
-    kprintf_dec(line);                     // Show the specific line in the file of 
-	                                       // which showed the kernel panic
+    kprintf_dec(line);
     kprintf("\n");
-    for(;;);                               // Halt the system for it's own protection
+    for(;;); // Halt the system
 }
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *

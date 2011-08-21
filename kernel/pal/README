@@ -1,0 +1,15 @@
+PAL is short for "Pegasus Application Layer". All kinds of applications, OS level or User
+level communicate with PAL in order to receive kernel functionality.
+
+PAL should only be used in User Mode and NOT in Kernel Mode!
+
+Check "subhybrid kernel.png" for more information on Pegasus's architecture
+
+This kernel is brought together thanks to the resources found on the OSDev Wiki
+http://wiki.osdev.org/Main_Page
+
+For more information: http://www.osarena.net/
+
+Developers:
+
+   * Constantine M. Apostolou - conmarap@osarena.net
