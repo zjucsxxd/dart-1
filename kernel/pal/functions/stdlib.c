@@ -1,3 +1,4 @@
+// stdlib function for pegasus os
 #include "stdlib.h"
 #include "ctype.h"
 

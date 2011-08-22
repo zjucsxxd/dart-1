@@ -1,3 +1,4 @@
+// stdlib function for pegasus os
 #ifndef STDLIB_H_
 #define STDLIB_H_
 

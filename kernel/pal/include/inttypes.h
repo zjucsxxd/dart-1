@@ -1,3 +1,4 @@
+// inittypes function for pegasus os
 #ifndef INTTYPES_H_
 #define INTTYPES_H_
 

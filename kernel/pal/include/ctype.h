@@ -1,3 +1,4 @@
+// ctype function for pegasus os
 #ifndef CTYPE_H_
 #define CTYPE_H_
 

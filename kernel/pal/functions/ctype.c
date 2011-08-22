@@ -1,3 +1,4 @@
+// ctype function for pegasus os
 #include "ctype.h"
 
 int isalnum(int c)

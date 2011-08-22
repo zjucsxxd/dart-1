@@ -1,3 +1,4 @@
+// stdio function for pegasus os
 #include "stdio.h"
 #include "string.h"
 #include "ctype.h"

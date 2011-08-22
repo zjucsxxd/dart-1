@@ -1,3 +1,4 @@
+// string function for pegasus os
 #ifndef STRING_H_
 #define STRING_H_
 

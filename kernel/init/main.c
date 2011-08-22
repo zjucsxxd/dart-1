@@ -29,7 +29,7 @@
 #include "cpuid.h"           // Contains the interface for retreiving cpu info
 #include "stdio.h"           // Contains the stdio functions 
 #include "keybd.h"           // Contains the keyboard interface
-#include "pci.h"
+#include "pci.h"             // Contains the interface for communicating with BIOS
 
 void shell();                // Define the shell function
 

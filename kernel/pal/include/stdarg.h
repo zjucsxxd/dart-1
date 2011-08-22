@@ -1,3 +1,4 @@
+// stdarg function for pegasus os
 #ifndef STDARG_H_
 #define STDARG_H_
 

@@ -1,16 +1,6 @@
+// string function for pegasus os
 #include "string.h"
-/*
-void memset(void *s, int c, size_t n)
-{
-	char *ptr = s;
-	while(n--) {
-		*ptr++ = c;
-	}
-}
-*/
-/* Does the same thing as memset only with 16bit values.
- * n in this case is the number of values, not the number of bytes.
- */
+
 void memset16(void *s, int c, size_t n)
 {
 	short *ptr = s;
@@ -18,18 +8,7 @@ void memset16(void *s, int c, size_t n)
 		*ptr++ = c;
 	}
 }
-/*
-void *memcpy(void *dest, const void *src, size_t n)
-{
-	char *dptr = dest;
-	const char *sptr = src;
 
-	while(n--) {
-		*dptr++ = *sptr++;
-	}
-	return dest;
-}
-*/
 void *memmove(void *dest, const void *src, size_t n)
 {
 	int i;
@@ -54,14 +33,7 @@ void *memmove(void *dest, const void *src, size_t n)
 
 	return dest;
 }
-/*
-size_t strlen(const char *s)
-{
-	size_t len = 0;
-	while(*s++) len++;
-	return len;
-}
-*/
+
 char *strchr(const char *s, int c)
 {
 	while(*s) {

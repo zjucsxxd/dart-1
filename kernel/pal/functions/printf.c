@@ -1,3 +1,5 @@
+// printf function for pegasus os
+
 #include "pstdio.h"
 #include "screen.h"
 

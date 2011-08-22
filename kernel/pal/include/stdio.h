@@ -1,3 +1,4 @@
+// stdio function for pegasus os
 #ifndef STDIO_H_
 #define STDIO_H_
 
