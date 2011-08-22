@@ -17,23 +17,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "screen.h"
-#include "dt.h"
-#include "timer.h"
-#include "paging.h"
-#include "multiboot.h"
-#include "fs.h"
-#include "initrd.h"
-#include "task.h"
-#include "syscall.h"
-#include "cpuid.h"
-#include "pstdio.h"
-//#include "isr.h"
-#include "keybd.h" //if you add this you will get an error
-// The above header is already included in isr.h
+#include "screen.h"          // Contains the kprintf, kput and kclear
+#include "dt.h"              // Contains the global descriptor table
+#include "timer.h"           // Contains the cmos timer interface
+#include "paging.h"          // Contains the interface for paging
+#include "multiboot.h"       // Contains the multiboot interface
+#include "fs.h"              // Contains the file system interface
+#include "initrd.h"          // Contains the initrd interface
+#include "task.h"            // Contains the multitasking interface
+#include "syscall.h"         // Contains the systemcall interface
+#include "cpuid.h"           // Contains the interface for retreiving cpu info
+#include "stdio.h"           // Contains the stdio functions 
+#include "keybd.h"           // Contains the keyboard interface
+#include "pci.h"
 
-void shell();
-void hello_world();
+void shell();                // Define the shell function
 
 extern u32int placement_address;
 u32int initial_esp;
@@ -43,16 +41,27 @@ u32int initial_esp;
  * * * * * * * * * * * * * * * * * * * * * * * * */
 int main(struct multiboot *mboot_ptr, u32int initial_stack)
 {
+    // ------------------------------------------------------------------------------------------
+    //                               Start of Kernel Mode
+    // ------------------------------------------------------------------------------------------
+    // Main entry to the kernel
     initial_esp = initial_stack;
+
     // Initialise all the ISRs and segmentation
     init_descriptor_tables();
-    // Initialise the screen (by clearing it)
+
+    // Initialise the screen by clearing it
     kclear();
     kprintf("Welcome to Codename Pegasus Operating System\n\n");
     kprintf("* Start of kernel mode\n");
     kprintf("*   Now loading kernel modules\n");
+
+    // Initialize interrupts	
+    kprintf("*   Initializing Interrupts\n");
+    __asm__ __volatile__ ("sti");
+
     // Initialise the PIT to 100Hz
-    init_timer(100);
+    init_timer(50);
     kprintf("*   CMOS timer initialised to 100hz\n");
 
     // Find the location of our initial ramdisk.
@@ -69,6 +78,88 @@ int main(struct multiboot *mboot_ptr, u32int initial_stack)
 
     // Preform memory allocation test
     kprintf("*   Preforming MAM test (malloc)\n");
+    mmutst();
+
+    kprintf("*   Initializing multitasking\n");
+
+    // Start multitasking.
+    initialise_tasking();
+
+    // Initialise the initial ramdisk, and set it as the filesystem root.
+    kprintf("*   Initializing initial ramdisk\n");
+    kprintf("*   Setting the filesystem root\n");
+    fs_root = initialise_initrd(initrd_location);
+
+    // Start keyboard driver - install it
+    kprintf("*   Installing keyboard driver\n");
+    init_keyboard();
+
+    kprintf("*   Initializing system calls\n");
+    initialise_syscalls();
+    kprintf("*   End of kernel mode\n");
+
+    // This is mainly a way to test the printf function
+    char *str = "PAL";
+    printf("*   Pegasus Aplication Layer - %s\n", str);
+
+    // ------------------------------------------------------------------------------------------
+    //                               Switch to User Mode
+    // ------------------------------------------------------------------------------------------
+    // For the love of God... DO NOT use kernel functions in User Mode, ONLY SYSCALLS!
+    switch_to_user_mode();
+    
+    syscall_kprintf("* Start of user mode\n");
+
+    init_pci();
+    syscall_kprintf("\nPegasus has booted successfully\n\n");
+
+    //pclear(); // Well functioning (pclear() is used ONLY in user mode)
+                //                  (kclear() is ONLY for kernel mode  )
+    syscall_kprintf("*   Entering infinite loop\n");
+    
+    // printf() works in both kernel and user mode
+    // Though its mostly aimed to be used in user mode
+    for(;;)
+    {
+       //endless loop
+    }
+    
+    syscall_kprintf("\n\n\n*   returning status 0\n\tsuccessful session\n");
+    syscall_kprintf("\n\t[you can now power off your computer]\n");
+    
+    return 0;
+    
+    // ------------------------------------------------------------------------------------------
+    // Functions that can be used 
+    //
+    //    init_pci();     - Detects the devices on our current computer   [user mode]
+    //    detect_cpu();   - Detects the model of the CPU on our computer  [user mode]
+    //
+    // ------------------------------------------------------------------------------------------
+    //                                  End of kernel
+    // ------------------------------------------------------------------------------------------
+}
+
+/* * * * * * * * * * * * * * * * * * * * * * * * *
+ *            The console application            *
+ * * * * * * * * * * * * * * * * * * * * * * * * */
+///TODO: Check function "gets()" and if interrupts are enabled
+void shell()
+{
+    for(;;)
+    {
+       printf("[pegasus]-> ");
+       //static char* cmd;
+       //cmd = getch();
+    }
+}
+
+/* * * * * * * * * * * * * * * * * * * * * * * * *
+ *              Startup malloc test              *
+ * * * * * * * * * * * * * * * * * * * * * * * * */
+void mmutst();
+void mmutst()
+{
     u32int malloc_test = kmalloc(100);
     if(malloc_test != 0)
     {
@@ -81,103 +172,6 @@ int main(struct multiboot *mboot_ptr, u32int initial_stack)
     else
     {
          kprintf("    MAM test failed...\n");    
-    }
-
-    kprintf("*   Initializing multitasking\n");
-
-    // Start multitasking.
-    initialise_tasking();
-
-    // Initialise the initial ramdisk, and set it as the filesystem root.
-    kprintf("*   Initializing initial ramdisk\n");
-    kprintf("*   Setting the filesystem root\n");
-    fs_root = initialise_initrd(initrd_location);
-
-// ******* test tasking ******* //
-//    int ret = fork();         //
-//    asm volatile("cli");      // Forking a process returns a page fault inside kernel mode
-//    hello_world();            // and causes an unhandeled interrupt inside user mode, wtf?
-//    asm volatile("sti");      //
-// **************************** //
-
-    // Initialize interrupts	
-    kprintf("*   Initializing Interrupts\n");
-    __asm__ __volatile__ ("sti");
-
-    // Start keyboard driver - install it
-    kprintf("*   Installing keyboard driver\n");
-    init_keyboard();
-
-    kprintf("*   Initializing system calls\n");
-    initialise_syscalls();
-    kprintf("*   End of kernel mode\n");
-
-    ///printf("<%-08s> and <%-08s>", "left", "right"); /// Causes a kernel panic, look into it!
-
-    // Switch to User Mode
-    //__For the love of God... DO NOT use kernel functions in User Mode, ONLY SYSCALLS__
-    switch_to_user_mode();
-
-    syscall_kprintf("* Start of user mode\n\n");
-    detect_cpu();
-    syscall_kprintf("Pegasus has booted successfully\n\n");
-
-    //start_task(shell,0); // Kernel panic situation fixed, does not read characters
-    shell();
-    //pclear(); // Well functioning
-    // detect_cpu();
-    syscall_kprintf("*   Entering infinite loop\n");
-    
-    for(;;)
-    {
-       //endless loop
-    }
-    
-    syscall_kprintf("\n\n\nreturning status 0\n\tsuccessful session\n");
-    syscall_kprintf("\n\t[you can now power off your computer]\n");
-    
-    return 0;
-}
-
-/* * * * * * * * * * * * * * * * * * * * * * * * *
- *        Test function for multitasking         *
- * * * * * * * * * * * * * * * * * * * * * * * * */
-void hello_world()
-{
-     /*syscall_*/kprintf("*   Multitasking working as expected\n");
-}
-
-/* * * * * * * * * * * * * * * * * * * * * * * * *
- *        Test function for multitasking         *
- * * * * * * * * * * * * * * * * * * * * * * * * */
-/*void hello_world1(void);
-void hello_world1(const char *fmt, ...)
-{
-        va_list args;
-	int ret_val;
-
-	va_start(args, fmt);
-	ret_val = vprintf(fmt, args);
-	va_end(args);
-	return ret_val;
-}*/
-
-/* * * * * * * * * * * * * * * * * * * * * * * * *
- *            The console application            *
- * * * * * * * * * * * * * * * * * * * * * * * * */
-///TODO: Check function "gets()" and if interrupts are enabled
-void shell()
-{
-    while(1)
-    {
-       syscall_kprintf("[pegasus]-> ");
-       static char* cmd;
-       cmd = getch();
-       
-       //unsigned char cmd;
-       //cmd = getch();
-       // Try adding it to a process list
-       // Enable interrupts and then try again!
     }
 }
 

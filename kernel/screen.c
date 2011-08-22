@@ -237,7 +237,7 @@ void kprintf_dec(u32int n)
  *                                         *
  * * * * * * * * * * * * * * * * * * * * * */
 
-void itoa (char *buf, int base, int d)
+void p_itoa (char *buf, int base, int d)
      {
        char *p = buf;
        char *p1, *p2;
@@ -309,7 +309,7 @@ void sfprintf (const char *format, ...)
                 case 'd':
                 case 'u':
                 case 'x':
-                itoa (buf, c, *((int *) arg++));
+                p_itoa (buf, c, *((int *) arg++));
                 p = buf;
                 goto string; 
                 break;

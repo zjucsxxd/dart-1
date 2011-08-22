@@ -45,6 +45,62 @@ u16int inw(u16int port)
 }
 
 /* * * * * * * * * * * * * * * * * * * * * * * * *
+ *               Write out to CMOS               *
+ * * * * * * * * * * * * * * * * * * * * * * * * */
+unsigned char readCMOS(unsigned char addr)
+{
+   unsigned char ret;
+   outb(0x70,addr);
+   __asm__ __volatile__ ("jmp 1f; 1: jmp 1f;1:");
+   ret = inb(0x71);
+   __asm__ __volatile__ ("jmp 1f; 1: jmp 1f;1:");
+   return ret;
+}
+
+/* * * * * * * * * * * * * * * * * * * * * * * * *
+ *              Read from our CMOS               *
+ * * * * * * * * * * * * * * * * * * * * * * * * */
+void writeCMOS(unsigned char addr, unsigned int value)
+{
+   outb(0x70, addr);
+   __asm__ __volatile__ ("jmp 1f; 1: jmp 1f;1:");
+   outb(0x71, value);
+   __asm__ __volatile__ ("jmp 1f; 1: jmp 1f;1:");
+}
+
+/* * * * * * * * * * * * * * * * * * * * * * * * *
+ *         Send reboot signal to our CPU         *
+ * * * * * * * * * * * * * * * * * * * * * * * * */
+void reboot()
+{
+    outb (0x64, 0xFE);
+}
+
+/* * * * * * * * * * * * * * * * * * * * * * * * *
+ *                Enable interrupts              *
+ * * * * * * * * * * * * * * * * * * * * * * * * */
+void enIntr()
+{
+     __asm__ __volatile__ ("sti");
+}
+
+/* * * * * * * * * * * * * * * * * * * * * * * * *
+ *               Disable interrupts              *
+ * * * * * * * * * * * * * * * * * * * * * * * * */
+void disIntr()
+{
+     __asm__ __volatile__ ("cli");
+}
+
+/* * * * * * * * * * * * * * * * * * * * * * * * *
+ *                    Halt CPU                   *
+ * * * * * * * * * * * * * * * * * * * * * * * * */
+void halt()
+{
+     __asm__ __volatile__ ("hlt");
+}
+
+/* * * * * * * * * * * * * * * * * * * * * * * * *
  *     Return the length of a string (char*)     *
  * * * * * * * * * * * * * * * * * * * * * * * * */
 int strlen(char *src)

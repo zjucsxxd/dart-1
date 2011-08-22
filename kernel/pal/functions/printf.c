@@ -1,4 +1,5 @@
 #include "pstdio.h"
+#include "screen.h"
 
 int do_printf(const char *fmt, va_list args, fnptr_t fn, void *ptr)
 {
@@ -267,13 +268,15 @@ int sprintf(char *buffer, const char *fmt, ...)
 /*****************************************************************************/
 int vprintf_help(unsigned c, void **ptr)
 {
-	puts(c);
+        ///syscall_kprintf(c);
+	//syscall_kput(c);
+kput(c);
 	return 0 ;
 }
 
 int vprintf(const char *fmt, va_list args)
 {
-	return do_printf(fmt, args, vprintf_help, NULL);
+	return do_printf(fmt, args, vprintf_help, 0);
 }
 
 // A minimal type of the printf function
