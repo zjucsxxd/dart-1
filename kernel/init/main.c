@@ -29,7 +29,8 @@
 #include "cpuid.h"           // Contains the interface for retreiving cpu info
 #include "stdio.h"           // Contains the stdio functions 
 #include "keybd.h"           // Contains the keyboard interface
-#include "pci.h"             // Contains the interface for communicating with BIOS
+#include "pci.h"             // Contains the pci interface
+#include "rtc.h"             // Contains the interface for returning the system time
 
 void shell();                // Define the shell function
 
@@ -111,12 +112,18 @@ int main(struct multiboot *mboot_ptr, u32int initial_stack)
     syscall_kprintf("* Start of user mode\n");
 
     init_pci();
+    detect_floppy_drives();
+    detectVideoType();
+    printf("*   System RAM->");
+    kprintf_dec(ramDetect()); 
+    printf(" Bytes\n");
     syscall_kprintf("\nPegasus has booted successfully\n\n");
 
     //pclear(); // Well functioning (pclear() is used ONLY in user mode)
                 //                  (kclear() is ONLY for kernel mode  )
+    //printf("*   Random number->%d \n",random(0,10000));
     syscall_kprintf("*   Entering infinite loop\n");
-    
+  
     // printf() works in both kernel and user mode
     // Though its mostly aimed to be used in user mode
     for(;;)
@@ -129,15 +136,23 @@ int main(struct multiboot *mboot_ptr, u32int initial_stack)
     
     return 0;
     
-    // ------------------------------------------------------------------------------------------
+    // -------------------------------------------------------------------------------------------
     // Functions that can be used 
     //
-    //    init_pci();     - Detects the devices on our current computer   [user mode]
-    //    detect_cpu();   - Detects the model of the CPU on our computer  [user mode]
+    //    init_pci();     - Detects the devices on our current computer   [user mode][           ]
+    //    detect_cpu();   - Detects the model of the CPU on our computer  [user mode][           ]
+    //    init_rtc();     - Detects and returns the current system time   [user mode][kernel mode]
+    //    detect_floppy_drives();
+    //                    - Detects the installed floppy drives           [user mode][kernel mode]
+    //    ramDetect();    - Detects the system's RAM                      [user mode][kernel mode]
+    //    detectVideoType();
+    //                    - Detects the type of the monitor (mono/color)  [user mode][           ]
+    //    random(u32int,u32int);
+    //                    - Creates a random number and returns it        [user mode][kernel mode]
     //
-    // ------------------------------------------------------------------------------------------
+    // -------------------------------------------------------------------------------------------
     //                                  End of kernel
-    // ------------------------------------------------------------------------------------------
+    // -------------------------------------------------------------------------------------------
 }
 
 /* * * * * * * * * * * * * * * * * * * * * * * * *

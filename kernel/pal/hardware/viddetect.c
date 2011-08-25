@@ -1,6 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- * Codename Pegasus Operating System - task.c                            *
- * - Initialises the PIT, and handles clock updates                      *
+ * Codename Pegasus Operating System - Detect monitor type (mono/color)  *
  * Copyright (C) 2011  Constantine M. Apostolou                          *
  * Author: Constantine M. Apostolou - conmarap@osarena.net               *
  *                                                                       *
@@ -17,34 +16,21 @@
  * You should have received a copy of the GNU General Public License     *
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-#include "timer.h"
-#include "isr.h"
-#include "screen.h"
+#include "common.h"
+#include "stdio.h"
 
-static void timer_callback(registers_t *regs)
+void detectVideoType(void)
 {
-    tick++;
-    switch_task();
-}
-
-void init_timer(u32int frequency)
-{
-    // Firstly, register our timer callback.
-    register_interrupt_handler(IRQ0, &timer_callback);
-
-    // The value we send to the PIT is the value to divide it's input clock
-    // by, to get our required frequency. Important to note is
-    // that the divisor must be small enough to fit into 16-bits.
-    u32int divisor = 1193180 / frequency; // 1193180 Hz
-
-    // Send the command byte.
-    outb(0x43, 0x36);
-
-    // Divisor has to be sent byte-wise, so split here into upper/lower bytes.
-    u8int l = (u8int)(divisor & 0xFF);
-    u8int h = (u8int)( (divisor>>8) & 0xFF );
-
-    // Send the frequency divisor.
-    outb(0x40, l);
-    outb(0x40, h);
+    char c=(*(volatile u16int*)0x410)&0x30; 
+	
+	// If c is 0x00 or 0x20 its a coulor screen
+	// If c is 0x30 its a monocrome screen
+	if(c==0x30)
+	{
+	    printf("*   Monocrome monitor has been found\n");
+	}
+	else
+	{
+	    printf("*   Color monitor has been found\n");
+	}
 }
