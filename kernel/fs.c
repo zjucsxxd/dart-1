@@ -45,6 +45,7 @@ u32int write_fs(fs_node_t *node, u32int offset, u32int size, u8int *buffer)
     else
         return 0;
 }
+
 /* * * * * * * * * * * * * * * * * * * * * * * * *
  *   Open the file system at the selected node   *
  * * * * * * * * * * * * * * * * * * * * * * * * */
@@ -54,6 +55,7 @@ void open_fs(fs_node_t *node, u8int read, u8int write)
     if (node->open != 0)
         return node->open(node);
 }
+
 /* * * * * * * * * * * * * * * * * * * * * * * * *
  *            Open the file system node          *
  * * * * * * * * * * * * * * * * * * * * * * * * */

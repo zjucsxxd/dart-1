@@ -18,10 +18,10 @@
 ; along with this program.  If not, see <http://www.gnu.org/licenses/>. *
 ; * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
-MBOOT_PAGE_ALIGN    equ 1<<0    ; Load kernel and modules on a page boundary
-MBOOT_MEM_INFO      equ 1<<1    ; Provide your kernel with memory info
-MBOOT_HEADER_MAGIC  equ 0x1BADB002 ; Multiboot Magic value
-; NOTE: We do not use MBOOT_AOUT_KLUDGE. It means that GRUB does not
+MBOOT_PAGE_ALIGN    equ 1<<0       ; Load kernel and modules on a page boundary
+MBOOT_MEM_INFO      equ 1<<1       ; Send the memory info to the kernel
+MBOOT_HEADER_MAGIC  equ 0x1BADB002 ; Multiboot value provided here
+
 ; pass us a symbol table.
 MBOOT_HEADER_FLAGS  equ MBOOT_PAGE_ALIGN | MBOOT_MEM_INFO
 MBOOT_CHECKSUM      equ -(MBOOT_HEADER_MAGIC + MBOOT_HEADER_FLAGS)
@@ -42,12 +42,13 @@ mboot:
     
     dd  mboot                   ; Location of this descriptor
     dd  code                    ; Start of kernel '.text' (code) section.
-    dd  bss                     ; End of kernel '.data' section.
+    dd  bss                     ; End of kernel '.data' section. After the last code in 
+	                            ; mboot, the kernel debugger entry point will appear here.
     dd  end                     ; End of kernel.
     dd  start                   ; Kernel entry point (initial EIP).
 
-[GLOBAL start]                  ; Kernel entry point.
-[EXTERN main]                   ; This is the entry point of our C code
+[GLOBAL start]                  ; Kernel entry point. Which is found bellow
+[EXTERN main]                   ; This is the entry point of our kernel's C code
 
 start:
     ; Load multiboot information:
@@ -55,8 +56,8 @@ start:
     push ebx
 
     ; Execute the kernel:
-    cli                         ; Disable interrupts.
-    call main                   ; call our main() function.
+    cli                         ; Disable interrupts. Note: This is done in the reboot function.
+    call main                   ; call the kernel's main() function.
     jmp $                       ; Enter an infinite loop, to stop the processor
-                                ; executing whatever rubbish is in the memory
-                                ; after our kernel!
+                                ; executing whatever crap is in the memory
+                                ; after the execution of the kernel. This should be avoided though...
