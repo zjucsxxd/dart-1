@@ -17,119 +17,60 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "screen.h"
-#include "common.h"
-#include "keybd.h"
-#include "keymap-us.h"
-#include "isr.h"
+#include "keybd.h"      // keybd interface
 
-extern int shell_csr_x;
-extern int shell_csr_y;
-
-volatile int shift_flag=0;
-volatile int caps_flag=0;
-
-volatile char* buffer; //For storing strings
-volatile char* buffer2;
-volatile u32int kb_count = 0; //Position in buffer
-volatile int gets_flag = 0;
-
-unsigned short ltmp;
-int ktmp = 0;
-
-static void do_gets();
-
+unsigned shiftstate = 0;
+unsigned char* kbdbuff;
+unsigned char tempbuf;
 /* Handles the keyboard interrupt */
-void keyboard_handler(registers_t* regs)
+void keyboard_handler(struct regs *r)
 {
     unsigned char scancode;
 
-    //Read scancode
+    /* Read from the keyboard's data buffer */
     scancode = inb(0x60);
-    
-    switch (scancode)
-    {
-           case 0x3A:
-                /* CAPS_LOCK LEDS */
-                outb(0x60,0xED);
-                ltmp |= 4;
-                outb(0x60,ltmp);
-                
-                if(caps_flag)
-                caps_flag=0;
-                else
-                caps_flag=1;
-                break;
-           case 0x45:
-                /* NUM_LOCK LEDS */
-                outb(0x60,0xED);
-                ltmp |= 2;
-                outb(0x60,ltmp);
-                break;
-           case 0x46:
-                /* SCROLL_LOCK LEDS */
-                outb(0x60,0xED);
-                ltmp |= 1;
-                outb(0x60,ltmp);
-                break;
-           case 60: /* F12 */
-                //reboot();
-                break;
-           default:
-                break;
-    }
 
+    /* If the top bit of the byte we read from the keyboard is
+    *  set, that means that a key has just been released */
     if (scancode & 0x80)
     {
-        //Key release
-        kprintf("Scancode 0x80");
-        //Left and right shifts
-        if (scancode - 0x80 == 42 || scancode - 0x80 == 54)
-	      shift_flag = 0;
-    }
-    else {   
-        //Keypress (normal)
-        
-        //Shift
-        if (scancode == 42 || scancode == 54)
-	{
-              kprintf(scancode);
-	      shift_flag = 1;
-	      return;
-	}
-        
-        //Gets()
-        if(kbdus[scancode] == '\n')
+        // Either Shift, Alt or Ctrl was pressed
+        //puts((char *)(scancode));
+        if (scancode == 0x2a)
+        { 
+            printf("Scancode->0x2a->Shift pressed!");
+            shiftstate = 1;
+        }
+        else if (scancode == 0xaa)
         {
-             kprintf("\n");
-             if(gets_flag == 0) do_gets();
-             gets_flag++;
-             for(;kb_count; kb_count--)
-                  buffer[kb_count] = 0;              
-        } 
-        else {
-             if(kbdus[scancode] == '\b')
-             {
-                  kprintf("\b");
-                  if(kb_count)
-                     buffer[kb_count--] = 0;
-             } 
-             else 
-             {
-                   kprintf(kbdus[scancode]);
-                   buffer[kb_count++] = kbdus[scancode];
-             }
-                  
-        } 
-        
-        //kprintf(kbdus[scancode]);
-        //monitor_put(kbdus[scancode]);
+            shiftstate = 0;
+        }
+    }
+    else
+    {
+        get_stream(kbdus[scancode]);
     }
 }
 
-void init_keyboard()
+// This method bellow is just for testing purposes
+// Once the keyboard driver works perfectly, this won't
+// print any characters to the screen, instead, this will
+// be handled by the functions bellow "keyboard_install()
+char* get_stream(char character)
 {
-    register_interrupt_handler(IRQ1, &keyboard_handler);
+    char backspace = '\b';
+    kput(character); // Print the character to the screen
+    kbdbuff = kbdbuff + character;
+    if (character == '\b') kbdbuff = kbdbuff + backspace;
+    if (character == '\n') kbdbuff = "";
+    regs = (char*)(kbdbuff);
+    return regs;
+}
+
+/* Installs the keyboard handler into IRQ1 */
+void keyboard_install()
+{
+    register_interrupt_handler(1, keyboard_handler);
 }
 
 //Gets a key
@@ -137,13 +78,13 @@ unsigned char getch()
 {
      unsigned char getch_char;
      
-     if(kbdus[inb(IRQ1)] != 0) //Not empty
-     outb(IRQ1,0xf4); //Clear buffer
+     if(kbdus[inb(0x33)] != 0) //Not empty
+        outb(0x33,0xf4); //Clear buffer
      
-     while(kbdus[inb(IRQ1)] == 0); //While buffer is empty
-     getch_char = kbdus[inb(IRQ1)];//0x60)];
+     while(kbdus[inb(0x33)] == 0); //While buffer is empty
+        getch_char = kbdus[inb(0x33)];//0x60)];
      kput(getch_char);
-     outb(IRQ1,0xf4); //Leave it emptying
+     outb(0x33,0xf4); //Leave it emptying
      return getch_char;
 }
 

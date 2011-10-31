@@ -17,6 +17,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+//NOTES: There is some kind of problem with paging.c, check it out and 
+//       fix the f@cking problem that is f@cking pissing me off with all
+//       those f@cking paging faults -> October 31 2011
+
 #include "screen.h"          // Contains the kprintf, kput and kclear
 #include "dt.h"              // Contains the global descriptor table
 #include "timer.h"           // Contains the cmos timer interface
@@ -25,7 +29,7 @@
 #include "fs.h"              // Contains the file system interface
 #include "initrd.h"          // Contains the initrd interface
 #include "task.h"            // Contains the multitasking interface
-#include "syscall.h"         // Contains the systemcall interface
+#include "syscall.h"         // Contains the system call interface
 #include "cpuid.h"           // Contains the interface for retreiving cpu info
 #include "stdio.h"           // Contains the stdio functions 
 #include "keybd.h"           // Contains the keyboard interface
@@ -93,7 +97,7 @@ int main(struct multiboot *mboot_ptr, u32int initial_stack)
 
     // Start keyboard driver - install it
     kprintf("*   Installing keyboard driver\n");
-    init_keyboard();
+    keyboard_install();
 
     kprintf("*   Initializing system calls\n");
     initialise_syscalls();
@@ -107,9 +111,18 @@ int main(struct multiboot *mboot_ptr, u32int initial_stack)
     //                               Switch to User Mode
     // ------------------------------------------------------------------------------------------
     // For the love of God... DO NOT use kernel functions in User Mode, ONLY SYSCALLS!
-    switch_to_user_mode();
-    
-    syscall_kprintf("* Start of user mode\n");
+    // ------------------------------------------------------------------------------------------
+    //switch_to_user_mode(); // This returns a fucking paging fault - kernel panic 
+                             // TODO: For some freaking reason, switching to usermode returns a 
+                             //       kernel panic, check out all the functions related to 
+                             //       syscalls and whatever is inside the virtual user land
+                             //       The kernel panic occures right after, or during the process
+                             //       of entering User Mode. Specific message:
+                             //       
+                             //       Page fault! ( present user-mode ) at 0x0x19001213 - EIP: 0x120093 
+                             //       PANIC! [Page fault] -> paging.c:246
+    // ------------------------------------------------------------------------------------------    
+    printf("* Start of user mode\n");
 
     init_pci();
     detect_floppy_drives();
@@ -117,12 +130,13 @@ int main(struct multiboot *mboot_ptr, u32int initial_stack)
     printf("*   System RAM->");
     kprintf_dec(ramDetect()); 
     printf(" Bytes\n");
-    syscall_kprintf("\nPegasus has booted successfully\n\n");
+    printf("\nPegasus has booted successfully\n\n");
 
     //pclear(); // Well functioning (pclear() is used ONLY in user mode)
                 //                  (kclear() is ONLY for kernel mode  )
     //printf("*   Random number->%d \n",random(0,10000));
-    syscall_kprintf("*   Entering infinite loop\n");
+
+    printf("*   Entering infinite loop\n");
   
     // printf() works in both kernel and user mode
     // Though its mostly aimed to be used in user mode
@@ -131,8 +145,8 @@ int main(struct multiboot *mboot_ptr, u32int initial_stack)
        //endless loop
     }
     
-    syscall_kprintf("\n\n\n*   returning status 0\n\tsuccessful session\n");
-    syscall_kprintf("\n\t[you can now power off your computer]\n");
+    printf("\n\n\n*   returning status 0\n\tsuccessful session\n");
+    printf("\n\t[you can now power off your computer]\n");
     
     return 0;
     
@@ -193,3 +207,45 @@ void mmutst()
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                        End of file main.c                             *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+// ------------------------------------------------------------------------
+// CODE TO TEST
+// ------------------------------ Fork test -------------------------------
+/*    // Create a new process in a new address space which is a clone of this.
+    int ret = fork();
+    printf("fork() returned %i", ret);
+    printf(", and getpid() returned %i", getpid());
+    printf("\n============================================================================\n");
+
+    asm volatile("cli");
+    // The next section of code is not reentrant so make sure we aren't interrupted during.
+    // list the contents of /
+    int i = 0;
+    struct dirent *node = 0;
+    while ( (node = readdir_fs(fs_root, i)) != 0)
+    {
+        printf("Found file ");
+        printf(node->name);
+        fs_node_t *fsnode = finddir_fs(fs_root, node->name);
+        if ((fsnode->flags&0x7) == FS_DIRECTORY)
+        {
+            printf("\n\t(directory)\n");
+        }
+        else
+        {
+            printf("\n\t contents: \"");
+            char buf[256];
+            u32int sz = read_fs(fsnode, 0, 256, buf);
+            int j;
+            for (j = 0; j < sz; j++)
+                kput(buf[j]);
+            printf("\"\n");
+        }
+        i++;
+    }
+    printf("\n");
+
+    asm volatile("sti"); */
+// ------------------------- Fork test -------------------------
+
+
