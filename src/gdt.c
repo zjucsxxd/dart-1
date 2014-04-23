@@ -4,14 +4,14 @@
 
 // Access the assembly driven functions through 
 // this method.
-extern VOID gdt_flush (UINT32);
-extern VOID idt_flush (UINT32);
+extern void gdt_flush (UINT32);
+extern void idt_flush (UINT32);
 
 // Internal function prototypes.
-static VOID init_gdt ();
-static VOID init_idt();
-static VOID gdt_set_gate (SINT32, UINT32, UINT32, UINT8, UINT8);
-static VOID init_set_gate (UINT8, UINT32, UINT16, UINT8);
+static void init_gdt ();
+static void init_idt();
+static void gdt_set_gate (SINT32, UINT32, UINT32, UINT8, UINT8);
+static void init_set_gate (UINT8, UINT32, UINT16, UINT8);
 
 gdt_entry_t gdt_entries[5];
 gdt_ptr_t   gdt_ptr;
@@ -19,15 +19,13 @@ idt_entry_t idt_entries[256];
 idt_ptr_t   idt_ptr;
 
 //
-VOID init_dt ()
-{
+void init_dt () {
   init_gdt ();
   init_idt ();
 }
 
 // IDT init function
-static VOID init_idt ()
-{
+static void init_idt () {
     idt_ptr.limit = sizeof(idt_entry_t) * 256 -1;
     idt_ptr.base  = (UINT32)&idt_entries;
 
@@ -99,8 +97,7 @@ static VOID init_idt ()
 }
 
 // GDT init function
-static VOID init_gdt ()
-{
+static void init_gdt () {
     gdt_ptr.limit = (sizeof(gdt_entry_t) * 6) - 1;
     gdt_ptr.base  = (UINT32)&gdt_entries;
 
@@ -115,9 +112,8 @@ static VOID init_gdt ()
 }
 
 // Set the gate for the IDT
-static VOID idt_set_gate (UINT8 num, UINT32 base, 
-			  UINT16 sel, UINT8 flags)
-{
+static void idt_set_gate (UINT8 num, UINT32 base, 
+			  UINT16 sel, UINT8 flags) {
     idt_entries[num].base_lo = base & 0xFFFF;
     idt_entries[num].base_hi = (base >> 16) & 0xFFFF;
 
@@ -127,9 +123,8 @@ static VOID idt_set_gate (UINT8 num, UINT32 base,
 }
 
 // Set the gate for the GDT
-static VOID gdt_set_gate (SINT32 num, UINT32 base, UINT32 limit, 
-			  UINT8 access, UINT8 gran)
-{
+static void gdt_set_gate (SINT32 num, UINT32 base, UINT32 limit, 
+			  UINT8 access, UINT8 gran) {
     gdt_entries[num].base_low    = (base & 0xFFFF);
     gdt_entries[num].base_middle = (base >> 16) & 0xFF;
     gdt_entries[num].base_high   = (base >> 24) & 0xFF;
@@ -140,3 +135,4 @@ static VOID gdt_set_gate (SINT32 num, UINT32 base, UINT32 limit,
     gdt_entries[num].granularity |= gran & 0xF0;
     gdt_entries[num].access      = access;
 }
+

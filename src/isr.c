@@ -4,7 +4,6 @@
 #include "include/global/isr.h"
 #include "inclue/global/global.h"
 
-VOID isr_handler (registers_t regs)
-{
+void isr_handler (registers_t regs) {
   printf ("Recieved interrupt: %i\n", regs.int_no);
 }

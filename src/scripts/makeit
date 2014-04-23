@@ -4,74 +4,81 @@
 # And then just execute it like ./<script_name>
 # Script written by Constantine M. Apostolou
 
+export TOOLCHAIN=./toolchain/bin
+export SOURCE=./src
+export OBJS=./objs
+export INCLUDE=${SOURCE}/include
+
+mkdir -p ${OBJS}
+
 echo "Compilation started"
 sleep 0.5
 
-echo "  Assembling kernel loader"
+echo "  Compiling Assembly code"
 echo "  --> start.asm"
-nasm -felf -o loader.o start.asm
+${TOOLCHAIN}/nasm -felf -o ${OBJS}/loader.o ${SOURCE}/arch/x86/boot/start.asm
 echo "  --> gdt.s"
-nasm -felf -o gdt.o gdt.s
+${TOOLCHAIN}/nasm -felf -o ${OBJS}/gdt.o ${SOURCE}/arch/x86/gdt.s
 echo "  --> interrupt.s"
-nasm -felf -o interrupt.o interrupt.s
+${TOOLCHAIN}/nasm -felf -o ${OBJS}/interrupt.o ${SOURCE}/arch/x86/interrupt.s
 echo "  --> process.s"
-nasm -felf -o process.o process.s
+${TOOLCHAIN}/nasm -felf -o ${OBJS}/process.o ${SOURCE}/arch/x86/process.s
 echo "  Done."
 
-echo "  Compiling kernel"
+echo "  Compiling C code"
 echo "  --> main.c"
-gcc -o kernel.o -c main.c  -nostdlib -nostdinc -fno-builtin
+${TOOLCHAIN}/i386-elf-gcc -o ${OBJS}/kernel.o -c ${SOURCE}/main.c -I${INCLUDE} -nostdlib -nostdinc -fno-builtin
 
 echo "  --> port/outb.c"
-gcc -o outb.o -c port/outb.c  -nostdlib -nostdinc -fno-builtin
+${TOOLCHAIN}/i386-elf-gcc -o ${OBJS}/outb.o -c ${SOURCE}/arch/x86/port/outb.c -I${INCLUDE} -nostdlib -nostdinc -fno-builtin
 
 echo "  --> port/inpb.c"
-gcc -o inpb.o -c port/inpb.c  -nostdlib -nostdinc -fno-builtin
+${TOOLCHAIN}/i386-elf-gcc -o ${OBJS}/inpb.o -c ${SOURCE}/arch/x86/port/inpb.c -I${INCLUDE} -nostdlib -nostdinc -fno-builtin
 
 echo "  --> port/inpw.c"
-gcc -o inpw.o -c port/inpw.c  -nostdlib -nostdinc -fno-builtin
+${TOOLCHAIN}/i386-elf-gcc -o ${OBJS}/inpw.o -c ${SOURCE}/arch/x86/port/inpw.c -I${INCLUDE} -nostdlib -nostdinc -fno-builtin
 
 echo "  --> screen/screen.c"
-gcc -o screen.o -c screen/screen.c  -nostdlib -nostdinc -fno-builtin
+${TOOLCHAIN}/i386-elf-gcc -o ${OBJS}/screen.o -c ${SOURCE}/screen/screen.c -I${INCLUDE} -nostdlib -nostdinc -fno-builtin
 
 echo "  --> screen/ctype.c"
-gcc -o ctype.o -c screen/ctype.c  -nostdlib -nostdinc -fno-builtin
+${TOOLCHAIN}/i386-elf-gcc -o ${OBJS}/ctype.o -c ${SOURCE}/screen/ctype.c -I${INCLUDE} -nostdlib -nostdinc -fno-builtin
 
 echo "  --> screen/printf.c"
-gcc -o printf.o -c screen/printf.c -nostdlib -nostdinc -fno-builtin
+${TOOLCHAIN}/i386-elf-gcc -o ${OBJS}/printf.o -c ${SOURCE}/screen/printf.c -I${INCLUDE} -nostdlib -nostdinc -fno-builtin
 
 echo "  --> screen/stdio.c"
-gcc -o stdio.o -c screen/stdio.c -nostdlib -nostdinc -fno-builtin
+${TOOLCHAIN}/i386-elf-gcc -o ${OBJS}/stdio.o -c ${SOURCE}/screen/stdio.c -I${INCLUDE} -nostdlib -nostdinc -fno-builtin
 
 echo "  --> screen/stdlib.c"
-gcc -o stdlib.o -c screen/stdlib.c  -nostdlib -nostdinc -fno-builtin
+${TOOLCHAIN}/i386-elf-gcc -o ${OBJS}/stdlib.o -c ${SOURCE}/screen/stdlib.c -I${INCLUDE} -nostdlib -nostdinc -fno-builtin
 
 echo "  --> screen/string.c"
-gcc -o string.o -c screen/string.c  -nostdlib -nostdinc -fno-builtin
+${TOOLCHAIN}/i386-elf-gcc -o ${OBJS}/string.o -c ${SOURCE}/screen/string.c -I${INCLUDE} -nostdlib -nostdinc -fno-builtin
 
 echo "  --> string/strlen.c"
-gcc -o strlen.o -c string/strlen.c  -nostdlib -nostdinc -fno-builtin
+${TOOLCHAIN}/i386-elf-gcc -o ${OBJS}/strlen.o -c ${SOURCE}/string/strlen.c -I${INCLUDE} -nostdlib -nostdinc -fno-builtin
 
 echo "  --> string/strcpy.c"
-gcc -o strcpy.o -c string/strcpy.c  -nostdlib -nostdinc -fno-builtin
+${TOOLCHAIN}/i386-elf-gcc -o ${OBJS}/strcpy.o -c ${SOURCE}/string/strcpy.c -I${INCLUDE} -nostdlib -nostdinc -fno-builtin
 
 echo "  --> string/strcmp.c"
-gcc -o strcmp.o -c string/strcmp.c  -nostdlib -nostdinc -fno-builtin
+${TOOLCHAIN}/i386-elf-gcc -o ${OBJS}/strcmp.o -c ${SOURCE}/string/strcmp.c -I${INCLUDE} -nostdlib -nostdinc -fno-builtin
 
 echo "  --> string/strcat.c"
-gcc -o strcat.o -c string/strcat.c  -nostdlib -nostdinc -fno-builtin
+${TOOLCHAIN}/i386-elf-gcc -o ${OBJS}/strcat.o -c ${SOURCE}/string/strcat.c -I${INCLUDE} -nostdlib -nostdinc -fno-builtin
 
 echo "  --> string/memset.c"
-gcc -o memset.o -c string/memset.c  -nostdlib -nostdinc -fno-builtin
+${TOOLCHAIN}/i386-elf-gcc -o ${OBJS}/memset.o -c ${SOURCE}/string/memset.c -I${INCLUDE} -nostdlib -nostdinc -fno-builtin
 
 echo "  --> string/memcpy.c"
-gcc -o memcpy.o -c string/memcpy.c  -nostdlib -nostdinc -fno-builtin
+${TOOLCHAIN}/i386-elf-gcc -o ${OBJS}/memcpy.o -c ${SOURCE}/string/memcpy.c -I${INCLUDE} -nostdlib -nostdinc -fno-builtin
 # TODO: Put the rest of the modules that need to be 
 #       be compiled here.
 echo "  Done."
 echo "Done."
 
 echo "Linking the object code"
-ld -T linker.ld -o kernel loader.o kernel.o screen.o inpb.o inpw.o outb.o string.o stdlib.o ctype.o stdio.o \
-strcpy.o strlen.o strcmp.o strcat.o memset.o memcpy.o
+${TOOLCHAIN}/i386-elf-ld -T ${SOURCE}/linker.ld -o kernel-i386 ${OBJS}/loader.o ${OBJS}/kernel.o ${OBJS}/screen.o ${OBJS}/inpb.o ${OBJS}/inpw.o ${OBJS}/outb.o ${OBJS}/string.o ${OBJS}/stdlib.o ${OBJS}/ctype.o ${OBJS}/stdio.o \
+${OBJS}/strcpy.o ${OBJS}/strlen.o ${OBJS}/strcmp.o ${OBJS}/strcat.o ${OBJS}/memset.o ${OBJS}/memcpy.o
 echo "Done."

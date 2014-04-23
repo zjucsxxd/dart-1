@@ -4,10 +4,10 @@
 #ifndef COMFUNC_H
 #define COMFUNC_H
 
-#include "def.h"
+#include <def.h>
 
-VOID   outb (UINT16 port, UINT8 value);
-UINT8  inpb (UINT16 port);
-UINT16 inpw (UINT16 port);
+void   	 outb(uint16_t port, uint8_t value);
+uint8_t  inpb(uint16_t port);
+uint16_t inpw(uint16_t port);
 
 #endif

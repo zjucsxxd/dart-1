@@ -1,12 +1,16 @@
+# Makefile for the x86 kernel
 CC 	:= ./toolchain/bin/i386-elf-gcc
 LD 	:= ./toolchain/bin/i386-elf-ld
 AS      := ./toolchain/bin/nasm
 
-CFLAGS  := -std=c99 -pedantic -Wall -Wextra -MMD -Werror -Wno-unused-parameter
-CFLAGS  += -O3 -fomit-frame-pointer
-CFLAGS	+= -mno-sse -mno-mmx -mno-sse2 -mno-sse3
-CFLAGS  += -Isrc/include
-ASFLAGS := -felf32
+INCLUDE := src/include
+
+CFLAGS  := -nostdlib -nostdinc -fno-builtin -I$(INCLUDE) -Wextra -std=c99
+# CFLAGS  := -std=c99 -pedantic -Wall -Wextra -MMD -Werror -Wno-unused-parameter
+# CFLAGS  += -O3 -fomit-frame-pointer $(INCLUDE)
+# CFLAGS  += -mno-sse -mno-mmx -mno-sse2 -mno-sse3
+# CFLAGS  += -Isrc/include
+# ASFLAGS := -felf32
 
 all: make-all
 
@@ -87,4 +91,16 @@ toolchain:
 	@ rm -rf toolchain/nasm-2.11.02
 	
 make-all:
-	@echo "Make all"
+	@ echo "Make all"
+	@ bash ./src/scripts/makeit
+
+run:
+	@ qemu-system-i386 -kernel kernel-i386
+
+clean:
+	@ rm -rf objs
+	@ rm kernel-i386
+
+clean-toolchain:
+	@ rm -rf toolchain
+
