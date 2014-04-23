@@ -86,5 +86,5 @@ toolchain:
 	@ echo " CLEAN toolchain/nasm-2.11.02"
 	@ rm -rf toolchain/nasm-2.11.02
 	
-make-all
+make-all:
 	@echo "Make all"
