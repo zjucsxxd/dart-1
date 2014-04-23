@@ -1,5 +1,5 @@
-CC 		:= ./toolchain/bin/i386-elf-gcc
-LD 		:= ./toolchain/bin/i386-elf-ld
+CC 	:= ./toolchain/bin/i386-elf-gcc
+LD 	:= ./toolchain/bin/i386-elf-ld
 AS      := ./toolchain/bin/nasm
 
 CFLAGS  := -std=c99 -pedantic -Wall -Wextra -MMD -Werror -Wno-unused-parameter
