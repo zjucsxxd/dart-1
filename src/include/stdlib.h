@@ -14,22 +14,20 @@ int atoi(const char *str);
 long atol(const char *str);
 
 void itoa(int val, char *buf, int base);
-void utoa(unsigned int val, char *buf, int base);
+void utoa(int val, char *buf, int base);
 
 /* defined in malloc.c */
 void *malloc(size_t sz);
 void free(void *ptr);
 
-typedef struct
-{
-  int quot;
-  int rem;
+typedef struct {
+	int quot;
+	int rem;
 } div_t;
 
-typedef struct 
-{
-  long quot;
-  long rem;
+typedef struct {
+	long quot;
+	long rem;
 } ldiv_t;
 
 #endif

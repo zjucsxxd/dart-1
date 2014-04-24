@@ -20,7 +20,8 @@
 #ifndef FS_H
 #define FS_H
 
-#include "../include/stdarg.h"
+#include <stdarg.h>
+#include <kstdio.h>
 
 // Width of stack == width of int 
 #define	STACKITEM	int

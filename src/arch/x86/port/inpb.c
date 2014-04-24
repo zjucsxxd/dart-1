@@ -7,6 +7,6 @@
 
 uint8_t  inpb(uint16_t port) {
     uint8_t ret;
-    asm volatile ("inb %1, %0" : "=a" (ret) : "dN" (port));
+    __asm__ __volatile__ ("inb %1, %0" : "=a" (ret) : "dN" (port));
     return ret;
 }

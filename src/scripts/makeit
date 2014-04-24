@@ -8,6 +8,7 @@ export TOOLCHAIN=./toolchain/bin
 export SOURCE=./src
 export OBJS=./objs
 export INCLUDE=${SOURCE}/include
+export GCCARGS="-I${INCLUDE} -nostdlib -nostdinc -fno-builtin -std=c99"
 
 mkdir -p ${OBJS}
 
@@ -27,52 +28,52 @@ echo "  Done."
 
 echo "  Compiling C code"
 echo "  --> main.c"
-${TOOLCHAIN}/i386-elf-gcc -o ${OBJS}/kernel.o -c ${SOURCE}/main.c -I${INCLUDE} -nostdlib -nostdinc -fno-builtin
+${TOOLCHAIN}/i386-elf-gcc -o ${OBJS}/kernel.o -c ${SOURCE}/main.c ${GCCARGS}
 
 echo "  --> port/outb.c"
-${TOOLCHAIN}/i386-elf-gcc -o ${OBJS}/outb.o -c ${SOURCE}/arch/x86/port/outb.c -I${INCLUDE} -nostdlib -nostdinc -fno-builtin
+${TOOLCHAIN}/i386-elf-gcc -o ${OBJS}/outb.o -c ${SOURCE}/arch/x86/port/outb.c ${GCCARGS}
 
 echo "  --> port/inpb.c"
-${TOOLCHAIN}/i386-elf-gcc -o ${OBJS}/inpb.o -c ${SOURCE}/arch/x86/port/inpb.c -I${INCLUDE} -nostdlib -nostdinc -fno-builtin
+${TOOLCHAIN}/i386-elf-gcc -o ${OBJS}/inpb.o -c ${SOURCE}/arch/x86/port/inpb.c ${GCCARGS}
 
 echo "  --> port/inpw.c"
-${TOOLCHAIN}/i386-elf-gcc -o ${OBJS}/inpw.o -c ${SOURCE}/arch/x86/port/inpw.c -I${INCLUDE} -nostdlib -nostdinc -fno-builtin
+${TOOLCHAIN}/i386-elf-gcc -o ${OBJS}/inpw.o -c ${SOURCE}/arch/x86/port/inpw.c ${GCCARGS}
 
 echo "  --> screen/screen.c"
-${TOOLCHAIN}/i386-elf-gcc -o ${OBJS}/screen.o -c ${SOURCE}/screen/screen.c -I${INCLUDE} -nostdlib -nostdinc -fno-builtin
+${TOOLCHAIN}/i386-elf-gcc -o ${OBJS}/screen.o -c ${SOURCE}/arch/x86/screen.c ${GCCARGS}
 
 echo "  --> screen/ctype.c"
-${TOOLCHAIN}/i386-elf-gcc -o ${OBJS}/ctype.o -c ${SOURCE}/screen/ctype.c -I${INCLUDE} -nostdlib -nostdinc -fno-builtin
+${TOOLCHAIN}/i386-elf-gcc -o ${OBJS}/ctype.o -c ${SOURCE}/screen/ctype.c ${GCCARGS}
 
 echo "  --> screen/printf.c"
-${TOOLCHAIN}/i386-elf-gcc -o ${OBJS}/printf.o -c ${SOURCE}/screen/printf.c -I${INCLUDE} -nostdlib -nostdinc -fno-builtin
+${TOOLCHAIN}/i386-elf-gcc -o ${OBJS}/printf.o -c ${SOURCE}/screen/printf.c ${GCCARGS}
 
 echo "  --> screen/stdio.c"
-${TOOLCHAIN}/i386-elf-gcc -o ${OBJS}/stdio.o -c ${SOURCE}/screen/stdio.c -I${INCLUDE} -nostdlib -nostdinc -fno-builtin
+${TOOLCHAIN}/i386-elf-gcc -o ${OBJS}/stdio.o -c ${SOURCE}/screen/stdio.c ${GCCARGS}
 
 echo "  --> screen/stdlib.c"
-${TOOLCHAIN}/i386-elf-gcc -o ${OBJS}/stdlib.o -c ${SOURCE}/screen/stdlib.c -I${INCLUDE} -nostdlib -nostdinc -fno-builtin
+${TOOLCHAIN}/i386-elf-gcc -o ${OBJS}/stdlib.o -c ${SOURCE}/screen/stdlib.c ${GCCARGS}
 
 echo "  --> screen/string.c"
-${TOOLCHAIN}/i386-elf-gcc -o ${OBJS}/string.o -c ${SOURCE}/screen/string.c -I${INCLUDE} -nostdlib -nostdinc -fno-builtin
+${TOOLCHAIN}/i386-elf-gcc -o ${OBJS}/string.o -c ${SOURCE}/screen/string.c ${GCCARGS}
 
 echo "  --> string/strlen.c"
-${TOOLCHAIN}/i386-elf-gcc -o ${OBJS}/strlen.o -c ${SOURCE}/string/strlen.c -I${INCLUDE} -nostdlib -nostdinc -fno-builtin
+${TOOLCHAIN}/i386-elf-gcc -o ${OBJS}/strlen.o -c ${SOURCE}/string/strlen.c ${GCCARGS}
 
 echo "  --> string/strcpy.c"
-${TOOLCHAIN}/i386-elf-gcc -o ${OBJS}/strcpy.o -c ${SOURCE}/string/strcpy.c -I${INCLUDE} -nostdlib -nostdinc -fno-builtin
+${TOOLCHAIN}/i386-elf-gcc -o ${OBJS}/strcpy.o -c ${SOURCE}/string/strcpy.c ${GCCARGS}
 
 echo "  --> string/strcmp.c"
-${TOOLCHAIN}/i386-elf-gcc -o ${OBJS}/strcmp.o -c ${SOURCE}/string/strcmp.c -I${INCLUDE} -nostdlib -nostdinc -fno-builtin
+${TOOLCHAIN}/i386-elf-gcc -o ${OBJS}/strcmp.o -c ${SOURCE}/string/strcmp.c ${GCCARGS}
 
 echo "  --> string/strcat.c"
-${TOOLCHAIN}/i386-elf-gcc -o ${OBJS}/strcat.o -c ${SOURCE}/string/strcat.c -I${INCLUDE} -nostdlib -nostdinc -fno-builtin
+${TOOLCHAIN}/i386-elf-gcc -o ${OBJS}/strcat.o -c ${SOURCE}/string/strcat.c ${GCCARGS}
 
 echo "  --> string/memset.c"
-${TOOLCHAIN}/i386-elf-gcc -o ${OBJS}/memset.o -c ${SOURCE}/string/memset.c -I${INCLUDE} -nostdlib -nostdinc -fno-builtin
+${TOOLCHAIN}/i386-elf-gcc -o ${OBJS}/memset.o -c ${SOURCE}/string/memset.c ${GCCARGS}
 
 echo "  --> string/memcpy.c"
-${TOOLCHAIN}/i386-elf-gcc -o ${OBJS}/memcpy.o -c ${SOURCE}/string/memcpy.c -I${INCLUDE} -nostdlib -nostdinc -fno-builtin
+${TOOLCHAIN}/i386-elf-gcc -o ${OBJS}/memcpy.o -c ${SOURCE}/string/memcpy.c ${GCCARGS}
 # TODO: Put the rest of the modules that need to be 
 #       be compiled here.
 echo "  Done."

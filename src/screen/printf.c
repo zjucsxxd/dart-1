@@ -242,8 +242,7 @@ EMIT2:				if((flags & PR_LJ) == 0)
 }
 
 /*****************************************************************************/
-int vsprintf_help(unsigned c, void **ptr)
-{
+int vsprintf_help(unsigned c, void **ptr) {
 	char *dst;
 
 	dst = *ptr;
@@ -251,18 +250,18 @@ int vsprintf_help(unsigned c, void **ptr)
 	*ptr = dst;
 	return 0 ;
 }
+
 /*****************************************************************************/
-int vsprintf(char *buffer, const char *fmt, va_list args)
-{
+int vsprintf(char *buffer, const char *fmt, va_list args) {
 	int ret_val;
 
 	ret_val = do_printf(fmt, args, vsprintf_help, (void *)buffer);
 	buffer[ret_val] = '\0';
 	return ret_val;
 }
+
 /*****************************************************************************/
-int sprintf(char *buffer, const char *fmt, ...)
-{
+int sprintf(char *buffer, const char *fmt, ...) {
 	va_list args;
 	int ret_val;
 
@@ -271,23 +270,21 @@ int sprintf(char *buffer, const char *fmt, ...)
 	va_end(args);
 	return ret_val;
 }
+
 /*****************************************************************************/
-int vprintf_help(unsigned c, void **ptr)
-{
+int vprintf_help(unsigned c, void **ptr) {
         ///syscall_kprintf(c);
 	//syscall_kput(c);
 	kput(c);
 	return 0 ;
 }
 
-int vprintf(const char *fmt, va_list args)
-{
+int vprintf(const char *fmt, va_list args) {
 	return do_printf(fmt, args, vprintf_help, 0);
 }
 
 // A minimal type of the printf function
-int printf(const char *fmt, ...)
-{
+int printf(const char *fmt, ...) {
 	va_list args;
 	int ret_val;
 
@@ -297,13 +294,11 @@ int printf(const char *fmt, ...)
 	return ret_val;
 }
 
-void kputs(char c)
-{
-    kput((CHAR)(c));
+void kputs(char c) {
+    kput((char)(c));
 }
 
-void pclear()
-{
+void pclear() {
     kclear();
 }
 
