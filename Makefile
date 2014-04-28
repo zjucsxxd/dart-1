@@ -8,7 +8,7 @@ ARM	:= ./toolchain/bin/arm-none-eabi
 
 INCLUDE := src/include
 
-CFLAGS  := -nostdlib -nostdinc -fno-builtin -I$(INCLUDE) -Wextra -std=c99 
+CFLAGS  := -v -msoft-float -nostdlib -nostdinc -fno-builtin -I$(INCLUDE) -Wextra -std=c99
 # CFLAGS  := -std=c99 -pedantic -Wall -Wextra -MMD -Werror -Wno-unused-parameter
 # CFLAGS  += -O3 -fomit-frame-pointer $(INCLUDE)
 # CFLAGS  += -mno-sse -mno-mmx -mno-sse2 -mno-sse3
@@ -22,28 +22,29 @@ make-all:
 	@ bash ./src/scripts/makeit
 
 arm:
+	@ echo "Make ARM"
 	@ mkdir -p objs
-	@ $(ARM)-as src/arch/arm/boot/start.s -o objs/start-arm.o
-	@ $(ARM)-gcc -Isrc/include $(ARMCC) -c src/main.c -o objs/main-arm.o
-	@ $(ARM)-gcc -Isrc/include $(ARMCC) -c src/arch/arm/screen.c -o objs/screen-arm.o
-	@ $(ARM)-gcc -Isrc/include $(ARMCC) -c src/screen/ctype.c -o objs/ctype-arm.o
-	@ $(ARM)-gcc -Isrc/include $(ARMCC) -c src/screen/printf.c -o objs/printf-arm.o
-	@ $(ARM)-gcc -Isrc/include $(ARMCC) -c src/screen/stdio.c -o objs/stdio-arm.o
-	@ $(ARM)-gcc -Isrc/include $(ARMCC) -c src/screen/stdlib.c -o objs/stdlib-arm.o
-	@ $(ARM)-gcc -Isrc/include $(ARMCC) -c src/screen/string.c -o objs/string-arm.o
-	@ $(ARM)-gcc -Isrc/include $(ARMCC) -c src/string/strlen.c -o objs/strlen-arm.o
-	@ $(ARM)-gcc -Isrc/include $(ARMCC) -c src/string/strcpy.c -o objs/strcpy-arm.o
-	@ $(ARM)-gcc -Isrc/include $(ARMCC) -c src/string/strcmp.c -o objs/strcmp-arm.o
-	@ $(ARM)-gcc -Isrc/include $(ARMCC) -c src/string/strcat.c -o objs/strcat-arm.o
-	@ $(ARM)-gcc -Isrc/include $(ARMCC) -c src/string/memset.c -o objs/memset-arm.o
-	@ $(ARM)-gcc -Isrc/include $(ARMCC) -c src/string/memcpy.c -o objs/memcpy-arm.o
-	@ $(ARM)-gcc -nostdlib -T src/linker-arm.ld -o kernel-arm objs/start-arm.o objs/screen-arm.o   \
+	$(ARM)-as src/arch/arm/boot/start.s -o objs/start-arm.o
+	$(ARM)-gcc -Isrc/include $(ARMCC) -c src/main.c -o objs/main-arm.o
+	$(ARM)-gcc -Isrc/include $(ARMCC) -c src/arch/arm/screen.c -o objs/screen-arm.o
+	$(ARM)-gcc -Isrc/include $(ARMCC) -c src/arch/arm/cpuid.c -o objs/cpuid.o
+	$(ARM)-gcc -Isrc/include $(ARMCC) -c src/screen/ctype.c -o objs/ctype-arm.o
+	$(ARM)-gcc -Isrc/include $(ARMCC) -c src/screen/printf.c -o objs/printf-arm.o
+	$(ARM)-gcc -Isrc/include $(ARMCC) -c src/screen/stdio.c -o objs/stdio-arm.o
+	$(ARM)-gcc -Isrc/include $(ARMCC) -c src/screen/stdlib.c -o objs/stdlib-arm.o
+	$(ARM)-gcc -Isrc/include $(ARMCC) -c src/screen/string.c -o objs/string-arm.o
+	$(ARM)-gcc -Isrc/include $(ARMCC) -c src/string/strlen.c -o objs/strlen-arm.o
+	$(ARM)-gcc -Isrc/include $(ARMCC) -c src/string/strcpy.c -o objs/strcpy-arm.o
+	$(ARM)-gcc -Isrc/include $(ARMCC) -c src/string/strcmp.c -o objs/strcmp-arm.o
+	$(ARM)-gcc -Isrc/include $(ARMCC) -c src/string/strcat.c -o objs/strcat-arm.o
+	$(ARM)-gcc -Isrc/include $(ARMCC) -c src/string/memset.c -o objs/memset-arm.o
+	$(ARM)-gcc -Isrc/include $(ARMCC) -c src/string/memcpy.c -o objs/memcpy-arm.o
+	$(ARM)-gcc -nostdlib -T src/linker-arm.ld -o kernel-arm objs/start-arm.o objs/screen-arm.o   \
 	objs/ctype-arm.o objs/stdio-arm.o objs/stdlib-arm.o objs/string-arm.o objs/strlen-arm.o objs/strcpy-arm.o \
-	objs/strcmp-arm.o objs/strcat-arm.o objs/memset-arm.o objs/memcpy-arm.o objs/main-arm.o -lgcc
-	# /usr/lib/gcc-cross/arm-linux-gnueabi/4.7/libgcc.a
+	objs/strcmp-arm.o objs/strcat-arm.o objs/memset-arm.o objs/memcpy-arm.o objs/main-arm.o objs/cpuid.o -lgcc
 
 run-arm:
-	@ qemu-system-arm -kernel kernel-arm -serial stdio
+	@ qemu-system-arm -kernel kernel-arm -serial stdio -M none -cpu arm1176
 
 run:
 	@ qemu-system-i386 -kernel kernel-i386

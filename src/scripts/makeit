@@ -39,6 +39,9 @@ ${TOOLCHAIN}/i386-elf-gcc -o ${OBJS}/inpb.o -c ${SOURCE}/arch/x86/port/inpb.c ${
 echo "  --> port/inpw.c"
 ${TOOLCHAIN}/i386-elf-gcc -o ${OBJS}/inpw.o -c ${SOURCE}/arch/x86/port/inpw.c ${GCCARGS}
 
+echo "  --> arch/cpuid.c"
+${TOOLCHAIN}/i386-elf-gcc -o ${OBJS}/inpw.o -c ${SOURCE}/arch/x86/cpuid.c ${GCCARGS}
+
 echo "  --> screen/screen.c"
 ${TOOLCHAIN}/i386-elf-gcc -o ${OBJS}/screen.o -c ${SOURCE}/arch/x86/screen.c ${GCCARGS}
 
